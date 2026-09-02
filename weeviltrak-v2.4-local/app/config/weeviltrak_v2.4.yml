@@ -1,0 +1,78 @@
+# model configuration file for WeevilTrak v2.4
+#
+# v2.4 is the canonical Stage/Phase production pipeline.  It keeps the v2.3
+# LightGBM signed-days primary learner and adds an OOF-trained learned Ridge
+# termination calibration layer.
+version: "v2.4"
+model_type: "lightgbm"
+resolution: "10by10"
+target: "signed_days_to_event"
+rolling_window_days: 14
+# Both v2.4 layers use the most recent three years by default. Backtesting
+# callers may still pass an explicit positive integer for window experiments.
+training_window_years: 3
+recent_label_coverage:
+  enabled: true
+  min_events_per_stage: 20
+  min_distinct_years_per_stage: 2
+  on_insufficient: "block_retraining"
+canonical_events:
+  enabled: true
+  include_phase2_as_stage3: true
+  include_derived_phase1: true
+  exclude_placeholder_dates: true
+  placeholder_month_day: "12-31"
+  # Direct model targets; Phase 1 is the derived midpoint training label.
+  model_stage_ids: [1, 4, 2, 3]
+manual_events:
+  enabled: true
+  include_in_training: true
+  include_in_validation: true
+features:
+  - stage_id
+  - cumu_gdd_air
+  - rolling_gdd_air
+  - rolling_humidity_mean_pct
+  - cumu_precip_total_mm
+  - doy
+  - cumu_cdd_air
+  - rolling_cdd_air
+  - latitude
+  - longitude
+model_parameters:
+  n_estimators: 200
+  learning_rate: 0.05
+  max_depth: 6
+  num_leaves: 31
+  min_child_samples: 20
+  subsample: 0.8
+  colsample_bytree: 0.8
+  random_state: 42
+  n_jobs: 5
+  monotone_constraints_by_feature:
+    cumu_gdd_air: -1
+post_event_training_days: 10
+zero_day_termination_threshold: 1.0
+zero_day_termination_consecutive_days: 2
+termination_model:
+  enabled: true
+  type: "learned_ridge"
+  training_window_years: 3
+  alpha: 30.0
+  threshold: 4.5
+  overwrite_business_prediction: true
+  # Ridge still runs from day 1, but early business output remains Base LightGBM
+  # until each location/event trajectory contains seven visible prediction days.
+  min_history_days: 7
+  # Ridge must be calibrated from chronologically out-of-fold LightGBM
+  # trajectories, never in-sample base predictions.
+  training_source: "oof_trajectories"
+  trajectory_start_month_day: "03-01"
+  trajectory_end_month_day: "06-30"
+  model_path: "model_testing_2025/model_weeviltrak_termination_ridge_v2_4.pkl"
+model_path: "model_testing_2025/model_weeviltrak_lgbm_v2_4.pkl"
+hindcast_model_path: "model_testing_2025/model_weeviltrak_lgbm_v2_4.pkl"
+output_path: "weeviltrak_data/api-testing/v2.4"
+data_source:
+  s3_bucket: "sps-ds-bucket"
+  spatial_coverage: "weeviltrak_data/spatial_coverage.csv"

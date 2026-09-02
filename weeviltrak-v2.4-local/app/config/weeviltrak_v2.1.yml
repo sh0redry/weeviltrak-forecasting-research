@@ -1,0 +1,27 @@
+# model configuration file for WeevilTrak v2.1
+# This is a random forest model trained with historical weeviltrak data back to 2015
+# and grided weather data at 10 by 10 km resolution
+# Model trained in summer of 2025
+version: "v2.1"
+model_type: "random_forest"
+resolution: "10by10"
+target: "days_to_event"
+features:
+  - stage_id
+  - cumu_gdd_air
+  - rolling_gdd_air
+  - rolling_humidity_mean_pct
+  - cumu_precip_total_mm
+  - latitude
+  - longitude
+model_parameters:
+  n_estimators: 200
+  criterion: 'squared_error'
+  random_state: 42
+  oob_score: False
+  n_jobs: 5
+model_path: "model_testing/weeviltrak_rf_030192026.pkl"
+output_path: "weeviltrak_data/api-testing/v2.1"
+data_source:
+  s3_bucket: "sps-ds-bucket"
+  spatial_coverage: "weeviltrak_data/spatial_coverage.csv"

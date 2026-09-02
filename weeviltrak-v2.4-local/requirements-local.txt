@@ -1,0 +1,9 @@
+# Versions exercised by the local smoke workflow. Python 3.11+ is required.
+-e ./vendor/griddedweather
+numpy==2.4.3
+pandas==2.3.3
+scikit-learn==1.8.0
+scipy==1.17.1
+lightgbm==4.6.0
+PyYAML==6.0.3
+pyarrow==23.0.1

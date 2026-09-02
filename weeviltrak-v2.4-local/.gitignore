@@ -1,0 +1,50 @@
+# Secrets and machine-specific environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+.aws/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Generated data, caches, logs, and artifacts
+outputs/
+data/local/
+*.log
+*.pid
+model_testing_2025/
+manual/artifacts/*.pkl
+manual/artifacts/*.joblib
+manual/artifacts/manifest.json
+manual/artifacts/checksums.sha256
+
+# Potentially sensitive source exports (review before any publication)
+data_exports/
+app/services/all_checks_weather_locations.csv
+*.parquet
+*.feather
+*.h5
+*.hdf5
+
+# Notebooks and OS/editor files
+.ipynb_checkpoints/
+notebooks/
+poetry.lock
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

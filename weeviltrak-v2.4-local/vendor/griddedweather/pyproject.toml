@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "griddedweather"
+version = "0.4.10+local"
+description = "Offline compatibility layer for WeevilTrak local development"
+requires-python = ">=3.11"
+dependencies = ["pandas>=2.1"]

@@ -1,0 +1,5 @@
+prediction_date,location_id,place_id,latitude,longitude,stage_id,cumu_gdd_air,rolling_gdd_air,cumu_cdd_air,rolling_cdd_air,rolling_humidity_mean_pct,cumu_precip_total_mm,doy
+2027-03-01,demo_site,demo_grid,40.15,-75.15,1,8.0,25.0,90.0,12.0,58.0,25.0,60
+2027-03-01,demo_site,demo_grid,40.15,-75.15,4,8.0,25.0,90.0,12.0,58.0,25.0,60
+2027-03-01,demo_site,demo_grid,40.15,-75.15,2,8.0,25.0,90.0,12.0,58.0,25.0,60
+2027-03-01,demo_site,demo_grid,40.15,-75.15,3,8.0,25.0,90.0,12.0,58.0,25.0,60

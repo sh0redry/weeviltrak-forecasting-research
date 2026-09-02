@@ -1,0 +1,34 @@
+# model configuration file for WeevilTrak v2.2 LightGBM primary learner
+version: "v2.2"
+model_type: "lightgbm"
+resolution: "10by10"
+target: "signed_days_to_event"
+features:
+  - stage_id
+  - cumu_gdd_air
+  - rolling_gdd_air
+  - rolling_humidity_mean_pct
+  - cumu_precip_total_mm
+  - latitude
+  - longitude
+model_parameters:
+  n_estimators: 200
+  learning_rate: 0.05
+  max_depth: 6
+  num_leaves: 31
+  min_child_samples: 20
+  subsample: 0.8
+  colsample_bytree: 0.8
+  random_state: 42
+  n_jobs: 5
+  monotone_constraints_by_feature:
+    cumu_gdd_air: -1
+post_event_training_days: 10
+zero_day_termination_threshold: 1.0
+zero_day_termination_consecutive_days: 2
+model_path: "model_testing_2025/model_weeviltrak_lgbm_v2_2.pkl"
+hindcast_model_path: "model_testing_2025/model_weeviltrak_lgbm_v2_2_frozen_20251231.pkl"
+output_path: "weeviltrak_data/api-testing/v2.2"
+data_source:
+  s3_bucket: "sps-ds-bucket"
+  spatial_coverage: "weeviltrak_data/spatial_coverage.csv"

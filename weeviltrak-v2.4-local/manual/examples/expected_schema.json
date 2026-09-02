@@ -1,0 +1,19 @@
+{
+  "input_required_columns": [
+    "prediction_date", "stage_id", "latitude", "longitude",
+    "cumu_gdd_air", "rolling_gdd_air", "cumu_cdd_air", "rolling_cdd_air",
+    "rolling_humidity_mean_pct", "cumu_precip_total_mm", "doy"
+  ],
+  "canonical_stage_ids": {
+    "1": "Stage 1",
+    "4": "Phase 1",
+    "2": "Stage 2",
+    "3": "Stage 3 / Phase 2"
+  },
+  "key_output_columns": [
+    "output_event_name", "predicted_days", "predicted_stage_date",
+    "base_predicted_days", "base_predicted_stage_date",
+    "termination_history_days", "termination_output_applied",
+    "termination_reached", "termination_decision_date"
+  ]
+}

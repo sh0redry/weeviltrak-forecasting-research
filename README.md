@@ -1,8 +1,8 @@
 # WeevilTrak v2.4 Forecasting Research
 
-WeevilTrak v2.4 是一个面向 Annual Bluegrass Weevil（ABW，一年生早熟禾象甲）生命周期时序预测的研究与工程化项目。系统利用历史虫态观测、网格化天气、地理位置和季节进程特征，预测指定地点距离关键生命周期事件还有多少天，并将结果转换为可审计的业务事件日期。
+本仓库是我在实习科研期间围绕 WeevilTrak v2.4 完成的本地复刻与研究验证项目。WeevilTrak v2.4 面向 Annual Bluegrass Weevil（ABW，一年生早熟禾象甲）生命周期时序预测：系统利用历史虫态观测、网格化天气、地理位置和季节进程特征，预测指定地点距离关键生命周期事件还有多少天，并将结果转换为可审计的业务事件日期。
 
-本仓库的重点不是重新定义 ABW 生物学，而是研究如何让预测系统在“事件即将发生或已经发生”的边界附近表现得更稳定。v2.4 在 LightGBM 基础预测器之上增加了一个基于历史预测轨迹的 Ridge termination calibration layer，用于判断某个 Stage/Phase 是否应被视为已经到达。
+本项目复刻并整理了 v2.4 的模型结构、训练与验证流程，同时提供无需 AWS 连接即可执行的本地工作流。研究重点不是重新定义 ABW 生物学，而是分析如何让预测系统在“事件即将发生或已经发生”的边界附近表现得更稳定。v2.4 在 LightGBM 基础预测器之上增加了一个基于历史预测轨迹的 Ridge termination calibration layer，用于判断某个 Stage/Phase 是否应被视为已经到达。
 
 > **研究边界**：模型输出是基于历史观测与天气特征的决策支持信息，不替代现场调查、虫害监测或专业农艺判断。仓库中的白皮书指标来自指定历史窗口和评估口径，不应直接解释为未来生产表现保证。
 
@@ -29,7 +29,7 @@ WeevilTrak v2.4 是一个面向 Annual Bluegrass Weevil（ABW，一年生早熟�
 - **防止验证泄漏**：建立按年份推进的 walk-forward / chronological out-of-fold 训练方式，使 termination calibrator 的训练轨迹来自未参与对应 Base 模型训练的历史年度预测，而不是 in-sample prediction。
 - **研究验证与技术写作**：完成或整理 v2.3–v2.4 对比、Stage/年份/纬度分层检查、termination policy 对比、特征消融与 Stage-to-Phase 分析，并形成 `WeevilTrak_v2.4_Whitepaper_Academic_Formatted.docx`。
 - **数据语义与可审计性工程**：将不稳定的原始 Stage/Phase 含义整理为 canonical business outputs，保留 Base prediction、termination decision、阈值和决策日期等诊断字段，支持回归分析与模型回滚。
-- **本地可复现工程**：审查原 AWS/EC2 代码、数据目录和依赖，建立 `weeviltrak-v2.4-local/`；新增相对路径配置、无密钥 `.env.example`、本地 train/predict/walk-forward CLI、fail-closed 私有依赖兼容层、单元测试、输入哈希和运行文档。
+- **本地可复现工程**：审查原 AWS/EC2 代码、数据目录和依赖，建立 `weeviltrak-v2.4-local/`；新增相对路径配置、无密钥 `.env.example`、本地 train/predict/walk-forward CLI、fail-closed 离线兼容层、单元测试、输入哈希和运行文档。
 
 上述贡献是在既有 WeevilTrak 数据采集体系和 v2.3 LightGBM Base Layer 基础上完成的。本 README 不将历史观测采集、原始业务系统、团队提供的数据或既有基础模型表述为个人独立成果。
 
@@ -65,7 +65,7 @@ flowchart TD
     J --> L[Termination decision and lock]
     K --> L
     L --> N[Stage 1 / Phase 1 / Stage 2 / Stage 3-Phase 2]
-    L --> O[Audit fields, local outputs or approved S3 publication]
+    L --> O[Audit fields, local outputs or versioned S3 outputs]
 ```
 
 ### 1. 数据与标签层
@@ -282,7 +282,7 @@ python -m app.local.cli walk-forward
 
 ## 真实研究数据要求
 
-真实本地研究需要经过授权的 daily engineered weather CSV 或 Parquet，至少包含：
+真实本地研究需要符合输入契约的 daily engineered weather CSV 或 Parquet，至少包含：
 
 ```text
 date, location_id, place_id, latitude, longitude,
@@ -297,15 +297,15 @@ cumu_precip_total_mm, doy, cumu_cdd_air, rolling_cdd_air
 | 能力 | AWS/生产路径 | 本地复现路径 |
 | --- | --- | --- |
 | Pest events | Redshift | 冻结的 canonical event export |
-| Weather | private `griddedweather` + Redshift/S3 cache | 授权的 engineered feature 文件或显式 mock |
+| Weather | `griddedweather` + Redshift/S3 cache | 本地 engineered feature 文件或显式 mock |
 | Spatial coverage | S3 coverage object | feature 文件中的 `place_id` 和坐标 |
 | Model storage | S3 object keys | `outputs/local/artifacts/` |
 | Prediction output | S3 versioned prefix | `outputs/local/` |
 | Credentials | AWS/Redshift environment | 不需要 |
 
-本地兼容层对 live weather query 采取 fail-closed 策略：没有授权依赖时会明确报错，而不是生成看似真实的天气数据。
+本地兼容层对 live weather query 采取 fail-closed 策略：未配置生产依赖时会明确报错，而不是生成看似真实的天气数据。
 
-## 环境变量与敏感信息
+## 环境变量与凭证管理
 
 本地运行只需要相对路径配置。生产连接可能读取：
 
@@ -335,19 +335,6 @@ DATABASE_NAME
 - 白皮书中的消融结果提示 lifecycle context 与 thermal accumulation 是主要贡献来源；部分 moisture/spatial features 的边际贡献可能为负，需要在新数据窗口中继续检验，而不是直接删除。
 - 本地新训练的 artifacts 是研究候选，不自动等同于批准的生产模型。
 
-## 安全与公开发布
-
-以下内容不得未经授权发布到公共 GitHub：
-
-- `data_exports/`、Redshift snapshots 和带精确坐标/人员信息的事件数据；
-- `data/local/`、weather cache、spatial coverage 和预测明细；
-- `outputs/`、模型 pickle/joblib、release manifests 和运行日志；
-- `.env`、AWS 配置、Redshift credentials、SSH/TLS keys；
-- 未清除输出或包含内部数据的 notebooks；
-- 私有包源、访问 token 或 proprietary `griddedweather` 包。
-
-详见 [本地复制审查报告](weeviltrak-v2.4-local/docs/LOCAL_AUDIT.md) 和项目内 [.gitignore](weeviltrak-v2.4-local/.gitignore)。
-
 ## 进一步阅读
 
 - [v2.4 当前架构](weeviltrak-v2.4-local/docs/architecture/weeviltrak_model_process_overview.md)
@@ -363,5 +350,4 @@ DATABASE_NAME
 - 当前 canonical default：`v2.4`。
 - `v2.5`：deprecated compatibility config，不用于新 artifact。
 - 本地工程：`weeviltrak-v2.4-local/`。
-- 生产 release：需要批准的数据快照、天气缓存、模型 artifacts、凭证和发布流程。
-- 仓库当前未声明开源许可证；在获得数据、模型与代码授权前，不应假定允许公开再分发。
+- 生产 release：需要完整的数据快照、天气缓存、模型 artifacts、凭证和版本化发布流程。
